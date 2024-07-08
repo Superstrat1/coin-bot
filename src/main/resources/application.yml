@@ -1,7 +1,5 @@
 telegram:
   bot:
-#    не вписывайте данные, так как можете отправить в публичный репозиторий
-#    используйте переменные среды для установки значений
     username: ${BOT_NAME}
     token: ${BOT_TOKEN}
     notify:
@@ -13,9 +11,19 @@ binance:
   api:
     getPrice: https://api.binance.com/api/v3/avgPrice?symbol=BTCUSDT
 
-db:
-  driver:
-    name: org.postgresql.Driver
-  url: jdbc:postgresql://localhost:5432/db
-  user: root
-  password: root
+#db:
+#  driver:
+#    name: org.postgresql.Driver
+#  url: jdbc:postgresql://localhost:5432/telegram_bot_subscriptions
+#  user: postgres
+#  password: 1qaz2ws3ed
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: drop-and-create
+  datasource:
+    url: jdbc:postgresql://localhost:5555/telegram_bot_subscriptions
+    username: postgres
+    password: 1qaz2ws3ed
+    driverClassName: org.postgresql.Driver

@@ -5,8 +5,8 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1qaz2ws3ed
+      POSTGRES_DB: telegram_bot_subscriptions
     ports:
-      - "5432:5432"
+      - "5555:5432"

@@ -35,6 +35,7 @@ public class GetPriceCommand implements IBotCommand {
         SendMessage answer = new SendMessage();
         answer.setChatId(message.getChatId());
         try {
+            System.out.println(service.getBitcoinPrice() + " price SOUT");
             answer.setText("Текущая цена биткоина " + TextUtil.toString(service.getBitcoinPrice()) + " USD");
             absSender.execute(answer);
         } catch (Exception e) {

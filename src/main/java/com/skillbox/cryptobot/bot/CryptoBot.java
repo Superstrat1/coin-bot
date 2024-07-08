@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
 
@@ -15,6 +17,10 @@ import java.util.List;
 public class CryptoBot extends TelegramLongPollingCommandBot {
 
     private final String botUsername;
+    private final String message = """
+            Этот бот взаимодействует только с командами!
+            Пожалуйста введите команду - /start для отображения списка доступных команд
+            """;
 
 
     public CryptoBot(
@@ -35,5 +41,13 @@ public class CryptoBot extends TelegramLongPollingCommandBot {
 
     @Override
     public void processNonCommandUpdate(Update update) {
+        SendMessage sm = new SendMessage();
+        sm.setChatId(update.getMessage().getChatId());
+        sm.setText(message);
+        try {
+            execute(sm);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
