@@ -1,6 +1,6 @@
 package com.skillbox.cryptobot.bot.command;
 
-import com.skillbox.cryptobot.model.Subscriber;
+import com.skillbox.cryptobot.entities.Subscriber;
 import com.skillbox.cryptobot.service.CrudService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class StartCommand implements IBotCommand {
 
     @Autowired
-    private CrudService<Subscriber> rep;
+    private CrudService<Subscriber> service;
     @Override
     public String getCommandIdentifier() {
         return "start";
@@ -40,16 +40,19 @@ public class StartCommand implements IBotCommand {
         SendMessage answer = new SendMessage();
         answer.setChatId(message.getChatId());
 
-        if(!rep.existsByTelegramId(userId)) {
+        if(!service.existsByTelegramId(userId)) {
             Subscriber subscriber = new Subscriber();
             subscriber.setTelegramId(userId);
-            Subscriber savedSubscriber = rep.create(subscriber);
+            Subscriber savedSubscriber = service.create(subscriber);
             log.info("Subscriber was created" + savedSubscriber.getTelegramId());
         }
         answer.setText("""
                 Привет! Данный бот помогает отслеживать стоимость биткоина.
                 Поддерживаемые команды:
                  /get_price - получить стоимость биткоина
+                 /subscribe - подписаться на определенную стоимость биткоина
+                 /get_subscription - посмотреть свою подписку
+                 /unsubscribe - отменить подписку
                 """);
         try {
             absSender.execute(answer);

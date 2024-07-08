@@ -11,12 +11,6 @@ binance:
   api:
     getPrice: https://api.binance.com/api/v3/avgPrice?symbol=BTCUSDT
 
-#db:
-#  driver:
-#    name: org.postgresql.Driver
-#  url: jdbc:postgresql://localhost:5432/telegram_bot_subscriptions
-#  user: postgres
-#  password: 1qaz2ws3ed
 spring:
   jpa:
     show-sql: true

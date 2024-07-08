@@ -1,6 +1,6 @@
 package com.skillbox.cryptobot.service;
 
-import com.skillbox.cryptobot.model.Subscriber;
+import com.skillbox.cryptobot.entities.Subscriber;
 import com.skillbox.cryptobot.repositories.SubscribersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,8 +13,8 @@ public class CrudSubServiceImpl implements CrudService<Subscriber> {
 
 
     @Override
-    public Subscriber getByPrice(Integer price) {
-        return repository.findByPrice(price).orElseThrow();
+    public Subscriber getByTelegramId(long id) {
+        return repository.findByTelegramId(id);
     }
 
     @Override

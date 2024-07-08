@@ -1,4 +1,4 @@
-package com.skillbox.cryptobot.model;
+package com.skillbox.cryptobot.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
