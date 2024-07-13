@@ -5,6 +5,11 @@ import com.skillbox.cryptobot.repositories.SubscribersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
 @Service
 public class CrudSubServiceImpl implements CrudService<Subscriber> {
 
@@ -35,6 +40,11 @@ public class CrudSubServiceImpl implements CrudService<Subscriber> {
     @Override
     public boolean existsByTelegramId(long userId) {
         return repository.existsByTelegramId(userId);
+    }
+
+    @Override
+    public List<Subscriber> getByPriceAndDateTime(Double price, LocalDateTime dateTime) {
+        return  new ArrayList<>(repository.findByPriceAndLastNotification(price, dateTime));
     }
 
 

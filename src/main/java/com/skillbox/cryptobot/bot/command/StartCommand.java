@@ -40,20 +40,26 @@ public class StartCommand implements IBotCommand {
         SendMessage answer = new SendMessage();
         answer.setChatId(message.getChatId());
 
+        String name = message.getFrom().getFirstName(); // delete after
+
         if(!service.existsByTelegramId(userId)) {
             Subscriber subscriber = new Subscriber();
             subscriber.setTelegramId(userId);
             Subscriber savedSubscriber = service.create(subscriber);
             log.info("Subscriber was created" + savedSubscriber.getTelegramId());
         }
-        answer.setText("""
-                Привет! Данный бот помогает отслеживать стоимость биткоина.
+
+        String hello = "Привет, " + name + "! Данный бот помогает отслеживать стоимость биткоина.\n";
+        String commands = """
                 Поддерживаемые команды:
                  /get_price - получить стоимость биткоина
                  /subscribe - подписаться на определенную стоимость биткоина
                  /get_subscription - посмотреть свою подписку
                  /unsubscribe - отменить подписку
-                """);
+                 /stop_subscription - остановить процедуру подписку
+                 /help - небольшая помощь
+                """;
+        answer.setText(hello + commands);
         try {
             absSender.execute(answer);
         } catch (TelegramApiException e) {

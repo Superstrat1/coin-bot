@@ -37,10 +37,14 @@ public class GetSubscriptionCommand implements IBotCommand {
         SendMessage sm = new SendMessage();
         sm.setChatId(message.getChatId());
 
-        if (subscriber.getPrice() == null) {
-            sm.setText("Активные подписки отсутствуют");
+        if(subscriber != null) {
+            if (subscriber.getPrice() == null) {
+                sm.setText("Активные подписки отсутствуют");
+            } else {
+                sm.setText("Вы подписаны на стоимость биткоина " + subscriber.getPrice() + " USD");
+            }
         } else {
-            sm.setText("Вы подписаны на стоимость биткоина " + subscriber.getPrice() + " USD");
+            sm.setText("Что то пошло не так! Попробуйте использовать команду /start и повторить действие");
         }
         try {
             absSender.execute(sm);

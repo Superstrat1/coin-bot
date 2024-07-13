@@ -4,6 +4,8 @@ import com.skillbox.cryptobot.entities.Subscriber;
 import com.skillbox.cryptobot.service.CrudService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.slf4j.SLF4JLogBuilder;
+import org.apache.logging.slf4j.SLF4JLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
@@ -22,6 +24,7 @@ public class UnsubscribeCommand implements IBotCommand {
 
     @Autowired
     private CrudService<Subscriber> service;
+
     @Override
     public String getCommandIdentifier() {
         return "unsubscribe";
@@ -38,15 +41,18 @@ public class UnsubscribeCommand implements IBotCommand {
         Subscriber subscriber = service.getByTelegramId(userId);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
+        if (subscriber != null) {
+            if (subscriber.getPrice() == null) {
+                sendMessage.setText("Активные подписки отсутствуют");
+            } else {
+                subscriber.setPrice(null);
+                service.change(subscriber);
+                sendMessage.setText("Ваша подписка удалена!");
+            }
 
-        if(subscriber.getPrice() == null) {
-            sendMessage.setText("Активные подписки отсутствуют");
         } else {
-            subscriber.setPrice(null);
-            service.change(subscriber);
-            sendMessage.setText("Ваша подписка удалена!");
+            sendMessage.setText("Что то пошло не так! Попробуйте использовать команду /start и повторить действие");
         }
-
         try {
             absSender.execute(sendMessage);
         } catch (TelegramApiException e) {

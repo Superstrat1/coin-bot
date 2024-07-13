@@ -18,9 +18,7 @@ public class CryptoCurrencyService {
     }
 
     public double getBitcoinPrice() throws IOException {
-        if (price.get() == null) {
-            price.set(client.getBitcoinPrice());
-        }
+        price.set(client.getBitcoinPrice());
         return price.get();
     }
 }

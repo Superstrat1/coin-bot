@@ -16,7 +16,7 @@ public class Subscriber {
     private UUID uuid;
     @Column(name = "telegram_id", unique = true)
     private Long telegramId;
-    private Integer price;
+    private Double price;
     @Column(name = "last_notification")
     private LocalDateTime lastNotification;
 }

@@ -6,6 +6,7 @@ telegram:
       delay:
         value: 10
         unit: MINUTES
+        check-duration: PT2M
 
 binance:
   api:
@@ -15,7 +16,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: drop-and-create
+      ddl-auto: create-drop
   datasource:
     url: jdbc:postgresql://localhost:5555/telegram_bot_subscriptions
     username: postgres
