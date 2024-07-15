@@ -1,5 +1,7 @@
 package com.skillbox.cryptobot.bot.command;
 
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -8,6 +10,7 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Service
+@Slf4j
 public class HelpCommand implements IBotCommand {
     @Override
     public String getCommandIdentifier() {
@@ -42,8 +45,9 @@ public class HelpCommand implements IBotCommand {
         sendMessage.setText(text);
         try {
             absSender.execute(sendMessage);
+            log.debug("User {} requested /help", userId);
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            log.error("Error in /help command from user {}", userId);
         }
 
     }

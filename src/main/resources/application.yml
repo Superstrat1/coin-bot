@@ -14,9 +14,8 @@ binance:
 
 spring:
   jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: create-drop
+      hibernate:
+        ddl-auto: create-drop
   datasource:
     url: jdbc:postgresql://localhost:5555/telegram_bot_subscriptions
     username: postgres

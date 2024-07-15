@@ -3,6 +3,7 @@ package com.skillbox.cryptobot.bot.command;
 import com.skillbox.cryptobot.entities.Subscriber;
 import com.skillbox.cryptobot.service.CrudService;
 import lombok.AllArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.slf4j.SLF4JLogBuilder;
 import org.apache.logging.slf4j.SLF4JLogger;
@@ -43,17 +44,21 @@ public class UnsubscribeCommand implements IBotCommand {
         sendMessage.setChatId(message.getChatId());
         if (subscriber != null) {
             if (subscriber.getPrice() == null) {
+                log.info("User {} requested /unsubscribe command and have not subscription", userId);
                 sendMessage.setText("Активные подписки отсутствуют");
             } else {
+                log.info("User {} requested /unsubscribe command with subscription {}", userId, subscriber.getPrice());
                 subscriber.setPrice(null);
                 service.change(subscriber);
                 sendMessage.setText("Ваша подписка удалена!");
             }
 
         } else {
+            log.warn("Unregistered user {} requested subscription", userId);
             sendMessage.setText("Что то пошло не так! Попробуйте использовать команду /start и повторить действие");
         }
         try {
+            log.debug("User {} requested /unsubscribe and get message {}", userId, sendMessage);
             absSender.execute(sendMessage);
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);

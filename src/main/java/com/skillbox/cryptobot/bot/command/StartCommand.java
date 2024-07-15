@@ -46,7 +46,7 @@ public class StartCommand implements IBotCommand {
             Subscriber subscriber = new Subscriber();
             subscriber.setTelegramId(userId);
             Subscriber savedSubscriber = service.create(subscriber);
-            log.info("Subscriber was created" + savedSubscriber.getTelegramId());
+            log.info("{} was created", savedSubscriber);
         }
 
         String hello = "Привет, " + name + "! Данный бот помогает отслеживать стоимость биткоина.\n";
@@ -62,8 +62,9 @@ public class StartCommand implements IBotCommand {
         answer.setText(hello + commands);
         try {
             absSender.execute(answer);
+            log.debug("User {} requested /start command", userId);
         } catch (TelegramApiException e) {
-            log.error("Error occurred in /start command", e);
+            log.error("Error occurred in /start command from user {}", userId,e);
         }
     }
 }

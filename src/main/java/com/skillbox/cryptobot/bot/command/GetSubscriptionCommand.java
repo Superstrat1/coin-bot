@@ -3,6 +3,7 @@ package com.skillbox.cryptobot.bot.command;
 import com.skillbox.cryptobot.entities.Subscriber;
 import com.skillbox.cryptobot.service.CrudService;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,12 +45,16 @@ public class GetSubscriptionCommand implements IBotCommand {
                 sm.setText("Вы подписаны на стоимость биткоина " + subscriber.getPrice() + " USD");
             }
         } else {
+            log.warn("Unregistered user {} requested subscription", userId);
             sm.setText("Что то пошло не так! Попробуйте использовать команду /start и повторить действие");
         }
         try {
             absSender.execute(sm);
+            log.debug("User {} requested subscription with price value {}, and get message {}",
+                    userId, subscriber.getPrice().toString(), sm);
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            log.error("Error in /get_subscription command from user {} with price {}",
+                    userId, subscriber.getPrice(), e);
         }
     }
 }

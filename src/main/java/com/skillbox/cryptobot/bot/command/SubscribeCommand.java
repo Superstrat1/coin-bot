@@ -43,14 +43,16 @@ public class SubscribeCommand implements IBotCommand {
         sm.setChatId(message.getChatId());
         if (subscriber != null) {
             map.getMap().put(userId, SubStates.WAITING_FOR_SUBSCRIPTION_PRICE);
+            log.info("User {} requested /subscribe command and get state", userId);
             sm.setText("Введите стоимость биткоина на которую вы хотите подписаться");
         } else {
+            log.warn("Unregistered user {} requested subscription", userId);
             sm.setText("Что то пошло не так! Попробуйте использовать команду /start и повторить действие");
         }
         try {
             absSender.execute(sm);
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            log.error("Error in /subscribe command from user {}", userId);
         }
     }
 }
