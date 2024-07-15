@@ -5,24 +5,24 @@
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/log.txt</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>log-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
-            <maxHistory>60</maxHistory>
-            <totalSizeCap>500MB</totalSizeCap>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+<!--    <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>logs/log.txt</file>-->
+<!--        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">-->
+<!--            <fileNamePattern>log-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>-->
+<!--            <maxFileSize>10MB</maxFileSize>-->
+<!--            <maxHistory>60</maxHistory>-->
+<!--            <totalSizeCap>500MB</totalSizeCap>-->
+<!--        </rollingPolicy>-->
+<!--        <encoder>-->
+<!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
     <logger name="org.hibernate.SQL" level="DEBUG"/>
-<!--    <logger name="org.hibernate.type.descriptor.sql" level="TRACE" />-->
+    <logger name="org.hibernate.type.descriptor.sql" level="TRACE" />
 
-    <logger name="com.skillbox.cryptobot" level="INFO">
-        <appender-ref ref="ROLLING"/>
-    </logger>
+<!--    <logger name="com.skillbox.cryptobot" level="INFO">-->
+<!--        <appender-ref ref="ROLLING"/>-->
+<!--    </logger>-->
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>

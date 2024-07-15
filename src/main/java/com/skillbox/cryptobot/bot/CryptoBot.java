@@ -28,6 +28,7 @@ import java.util.List;
 public class CryptoBot extends TelegramLongPollingCommandBot {
 
     private final String botUsername;
+    private final String regex = "[0-9]{1,20}.?[0-9]{0,8}";
 
     @Autowired
     private SubscribersStateMap map;
@@ -58,74 +59,39 @@ public class CryptoBot extends TelegramLongPollingCommandBot {
     @Override
     public void processNonCommandUpdate(Update update) {
         SendMessage mainMessage = new SendMessage();
-        SendMessage subscriptionNotificationMessage = new SendMessage();
         long userId = update.getMessage().getFrom().getId();
         String inputMessage = update.getMessage().getText();
         mainMessage.setChatId(userId);
-        subscriptionNotificationMessage.setChatId(userId);
-        subscriptionNotificationMessage.setText("");
-
-        if (map.getMap().containsKey(userId)) {
-            SubStates state = map.getMap().get(userId);
-            switch (state) {
-                case WAITING_FOR_SUBSCRIPTION_PRICE -> {
-                    Subscriber subscriber = subscriberCrudService.getByTelegramId(userId);
-                    if (subscriber != null) {
-                        Double price;
-                        try {
-                            price = Double.valueOf(inputMessage.replace(",", "."));
-                            if (price < 0 || price > Double.MAX_VALUE || Double.isNaN(price)) {
-                                throw new NumberFormatException();
-                            }
-                        } catch (Exception e) {
-                            log.error("User {} input wrong price: {}", userId,inputMessage, e);
-                            mainMessage.setText("""
-                                    Введите интересующую стоимость цифрами!
-                                    Цена может быть выражена десятичной дробью и должна быть больше нуля.
-                                    Либо используйте команду /stop_subscription для остановки процедуры
-                                    """);
-                            try {
-                                execute(mainMessage);
-                                return;
-                            } catch (TelegramApiException ex) {
-                                log.warn("User {} not get message {}", userId, mainMessage, ex);
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                            subscriber.setPrice(price);
-                            subscriberCrudService.change(subscriber);
-                            map.getMap().remove(userId);
-                            log.info("Subscription must be created for user {} with price {}", userId, price);
-                            mainMessage.setText("Новая подписка создана на стоимость " + TextUtil.toString(price) + " USD"
-                                    + "\nКогда цена биткоина будет ниже или равна вашей, вам придет уведомление!");
-                            subscriptionNotificationMessage.setText(subscriptionNotificationText(price, userId));
-                    } else {
-                        log.warn("Unregistered user {} with state: {}, input: {}", userId, state, inputMessage);
-                        mainMessage.setText("Что то пошло не так!\nИспользуйте команду /start и повторите попытку");
-                    }
-                }
-            }
-
-        } else {
-            log.debug("Stateless user {} input: {}", userId, inputMessage);
-            String message = """
-                    Этот бот взаимодействует только с командами!
-                    Используйте команду - /help для лучшего понимания взаимодействия
-                    """;
-            mainMessage.setText(message);
-        }
 
         try {
-            execute(mainMessage);
-            log.debug("User {} get message: {}", userId, mainMessage);
-            if (!subscriptionNotificationMessage.getText().isEmpty()) {
-                execute(subscriptionNotificationMessage);
+            if (!map.getMap().containsKey(userId)) {
+                anyInputExceptRight(mainMessage);
+                throw new IllegalArgumentException(
+                        String.format("Stateless user %d input: %s", userId, inputMessage));
             }
-        } catch (TelegramApiException e) {
-            log.warn("User {} not get mainMessage {}, or subNotificationMessage {}",
-                    userId, mainMessage, subscriptionNotificationMessage, e);
+            SubStates state = map.getMap().get(userId);
+            Subscriber subscriber = subscriberCrudService.getByTelegramId(userId);
+            if (subscriber == null) {
+                nullUserMessage(mainMessage);
+                throw new NullPointerException(
+                        String.format("Unregistered user %d with state: %s, input: %s", userId, state, inputMessage));
+            }
+            switch (state) {
+                case WAITING_FOR_SUBSCRIPTION_PRICE -> {
+                    String editedInput = inputMessage.replace(",", ".");
+                    if (!editedInput.matches(regex)) {
+                        incorrectInput(mainMessage);
+                        throw new IllegalArgumentException(
+                                String.format("User %d input incorrect value %s", userId, inputMessage));
+                    }
+                    subscription(subscriber, editedInput, mainMessage);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error occurred", e);
         }
     }
+
 
     @Scheduled(fixedDelayString = "${telegram.bot.notify.delay.check-duration}")
     public void notification() {
@@ -158,7 +124,7 @@ public class CryptoBot extends TelegramLongPollingCommandBot {
         });
     }
 
-    private String subscriptionNotificationText(Double price, Long id) {
+    private String subscriptionNotification(Double price, Long id) {
 
         String text;
         Double currentPrice;
@@ -170,7 +136,7 @@ public class CryptoBot extends TelegramLongPollingCommandBot {
 
         if (price > currentPrice) {
             text = "Стоимость биткоина ниже вашей подписки! Сейчас биткоин стоит " + TextUtil.toString(currentPrice) + " USD"
-                    + "\nВаша цена " + TextUtil.toString(price) + ". Разница " + (price - currentPrice) + ".";
+                    + "\nВаша цена " + TextUtil.toString(price) + ". Разница " + TextUtil.toString(price - currentPrice);
             Subscriber subscriber = subscriberCrudService.getByTelegramId(id);
             subscriber.setLastNotification(LocalDateTime.now());
             subscriberCrudService.change(subscriber);
@@ -180,5 +146,55 @@ public class CryptoBot extends TelegramLongPollingCommandBot {
             text = "Текущая стоимость биткоина " + TextUtil.toString(currentPrice) + " USD";
         }
         return text;
+    }
+
+    public void sendMessage(SendMessage sendMessage) {
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error("Error occurred in sendMessage method", e);
+        }
+    }
+
+    private void subscription(Subscriber subscriber, String input, SendMessage message) {
+        long userId = subscriber.getTelegramId();
+        Double price = Double.parseDouble(input);
+        subscriber.setPrice(price);
+        subscriberCrudService.change(subscriber);
+        map.getMap().remove(userId);
+        log.info("Subscription must be created for user {} with price {}", userId, price);
+        String newSubscriptionCreated = "Новая подписка создана на стоимость " + price + " USD"
+                + "\nКогда цена биткоина будет ниже или равна вашей, вам придет уведомление!";
+        message.setText(newSubscriptionCreated);
+        sendMessage(message);
+        message.setText(subscriptionNotification(price, userId));
+        sendMessage(message);
+    }
+
+    private void nullUserMessage(SendMessage message) {
+        String messageText = "Что то пошло не так!\nИспользуйте команду /start и повторите попытку";
+        message.setText(messageText);
+        sendMessage(message);
+    }
+
+    private void incorrectInput(SendMessage message) {
+        String messageText = """
+                Введите интересующую стоимость цифрами!
+                Цена может быть выражена десятичной дробью и должна быть больше нуля.
+                Для дроби не более 8 знаков после запятой.
+                Либо используйте команду /stop_subscription для остановки процедуры
+                """;
+        message.setText(messageText);
+        sendMessage(message);
+    }
+
+    private void anyInputExceptRight(SendMessage message) throws IllegalArgumentException {
+
+        String anyInputWithoutState = """
+                Этот бот взаимодействует только с командами!
+                Используйте команду - /help для лучшего понимания взаимодействия
+                """;
+        message.setText(anyInputWithoutState);
+        sendMessage(message);
     }
 }
